@@ -61,10 +61,7 @@ for key in bucket.list():
         print ("formatted dt: ", data_time,  year, month, day, hrs)
 
         doc = {}
-        doc['y'] = year
-        doc['m'] = month
-        doc['d'] = day
-        doc['h'] = hrs
+        doc['ymdh'] = year + '-' + month + '-' + day + '-' + hrs
         count = 0
 
         # Read file, save processed output to json
