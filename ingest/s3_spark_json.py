@@ -2,10 +2,8 @@
 # Read files from S3
 # Grab metadata from filename
 # Create json document with only the relevant fields that Spark can handle
-# Krishna Thapa                                                        Jan 2017
+# Krishna Thapa                                                        Feb 2017
 ################################################################################
-
-
 
 from collections import defaultdict
 from StringIO import StringIO
@@ -17,11 +15,22 @@ import json
 import gzip
 
 
+# create logger
+
+logger = logging.getLogger('WikiView')
+hdlr = logging.FileHandler('s3_spark_json.log')
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+hdlr.setFormatter(formatter)
+logger.addHandler(hdlr) 
+logger.setLevel(logging.DEBUG)
+
+
+# Grab aws credentials from os environment
 aws_access_key = os.getenv('AWS_ACCESS_KEY_ID', 'default')
 aws_secret_access_key = os.getenv('AWS_SECRET_ACCESS_KEY', 'default')
 
 
-
+# Set aws bucket and connect
 bucket_name = "kt-wiki"
 folder_name = "/"
 conn = boto.connect_s3(aws_access_key, aws_secret_access_key)
@@ -29,70 +38,80 @@ conn = boto.connect_s3(aws_access_key, aws_secret_access_key)
 bucket = conn.get_bucket(bucket_name)
 key = bucket.get_key(folder_name)
 
-
-path = 'test/'
-
+## Sample 
 k = Key(bucket)
 k.set_contents_from_string('This is a test of S3')
 data = k.get_contents_as_string()
-
-
-#key.set_contents_from_filename('data.json')
 print data
 
-filenames = []
-pagecounts = defaultdict(int)
+def convert_to_json(basepath, sendto):
+    """
+    Given a path in S3, will grab .gz file from that path to convert to json
 
-year = month = day = hrs = ''
-path = 'pageviews/2016/2016-12/'
-k = bucket.new_key(path)
+    basepath: grab gz files from dir
+    sendto: which folder to send json file to
+    """
 
-for key in bucket.list():
-    thisfile = key.name.encode('utf-8')
-#    if 'projectviews' not in thisfile and 'sql' not in thisfile and '.gz' in thisfile and thisfile.startswit
-h("pageviews/2016/2016-12/pageviews-20161231-2"):
-    if 'projectviews' not in thisfile and 'sql' not in thisfile and '.gz' in thisfile and thisfile.startswith
-("pageviews/2016/2016-12/pageviews-20161231-"):
-        filenames.append(thisfile)
-        print ("Processing file: ", thisfile)
-        fname = thisfile.split('/')
-        key.get_contents_to_filename('/home/ubuntu/spark/data/' + fname[-1])
-        fname1 = fname[-1]
-        data_time = fname1[:-3].split('-')
-        year, month, day, hrs =  data_time[1][:4], data_time[1][4:6], data_time[1][-2:], data_time[-1]
-        print ("formatted dt: ", data_time,  year, month, day, hrs)
-        count = 0
+    k = bucket.new_key(basepath)
 
-        docname =  'pageviews-' +  year + '-' + month + '-' + day + '-' + hrs + '.json'
+    filenames = []
+    year = month = day = hrs = ''
 
-        dictlist = []
-        with open(docname, 'w') as fp:
-            with gzip.open('/home/ubuntu/spark/data/'+fname[-1],'r') as fin:
-                for line in fin:
-                    line = line.split(' ')
-                    doc = {}
-                    doc['ymdh'] = year + '-' + month + '-' + day + '-' + hrs
-                    try:
-                        title, vcount = line[1], line[2]
-                        doc['title'] = title
-                        doc['vcount'] = vcount
-                    except:
-                        print line
-                        print "Error!"
-                    count += 1
-                    json.dump(doc,fp)
-                    fp.write('\n')
-                    if (count % 200000 == 0 ):
-                        print (count, doc)
+    for key in bucket.list():
+        thisfile = key.name.encode('utf-8')
+        if 'projectviews' not in thisfile and 'sql' not in thisfile and '.gz' in thisfile and thisfile.startswith(basepath):
+            # S3 key name is of the format kt-wiki/pageviews/2016/2016-06/pageviews-20160601-000000.gz
+            # Split by / to get last element
+            filenames.append(thisfile)
+            logger.info("Processing file: %s", thisfile)
+            fname = thisfile.split('/')
 
+            # Get content from filename and save to local
+            # Split again to Grab year, month, day, hour value from filename
+            key.get_contents_to_filename('/home/ubuntu/WikiView/data/' + fname[-1])
+            fname1 = fname[-1]
+            data_time = fname1[:-3].split('-')
+            year, month, day, hrs =  data_time[1][:4], data_time[1][4:6], data_time[1][-2:], data_time[-1]
+
+            docname =  'pageviews-' +  year + '-' + month + '-' + day + '-' + hrs + '.json'
+            dictlist = []
+
+            # save file from s3 to local, read, write to json, push json to s3
+            with open(docname, 'w') as fp:
+                #
+                with gzip.open('/home/ubuntu/WikiView/data/'+fname[-1],'r') as fin:
+                    for line in fin:
+                        line = line.split(' ')
+                        doc = {}
+                        doc['ymdh'] = year + '-' + month + '-' + day + '-' + hrs
+                        try:
+                            title, vcount = line[1], line[2]
+                            doc['title'] = title
+                            doc['vcount'] = vcount
+                        except:
+                            logger.error('Error reading gzip file at line: %s', line)
+                        json.dump(doc,fp)
+                        fp.write('\n')
+
+            # Now, save the json file to 
             key_name = 'pageviews-' +  year + '-' + month + '-' + day + '-' + hrs + '.json'
-            path = '/test/'
-            full_key_name = os.path.join(path, key_name)
+            full_key_name = os.path.join(sendto, key_name)
             k = bucket.new_key(full_key_name)
 
-            print ("Sending json file to S3: ", docname)
+            logger.info("Sending json file to S3: %s", docname)
             k.set_contents_from_filename(key_name)
 
             # Remove temp file
-            print ("Removing temp file: ", '/home/ubuntu/spark/data/'+fname[-1])
-            os.remove('/home/ubuntu/spark/data/'+fname[-1])
+            logger.info("Removing temp file: ", '/home/ubuntu/WikiView/data/'+fname[-1])
+            os.remove('/home/ubuntu/WikiView/data/'+fname[-1])
+    logger.info('Finished!!!')
+
+
+if __name__ == "__main__":
+    logging.basicConfig(filename='s3_spark_json.log', level=logging.INFO)
+    logging.info('Starting...')
+
+    basepath = 'pageviews/2016/2016-12/pageviews-20161231-'
+    sendto = 'test/'
+    convert_to_json(basepath, sendto)
+    logging.info('Finished...')
