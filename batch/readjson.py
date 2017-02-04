@@ -12,8 +12,10 @@ from pyspark.sql import SQLContext
 import os
 from boto.s3.connection import S3Connection
 import json
+import pyspark_cassandra
 
-conf = SparkConf().setAppName("WikiView").setMaster("spark://ip-XXX-XX-X-XXX")
+
+conf = SparkConf().setAppName("WikiView")
 sc = SparkContext(conf = conf)
 sqlContext = SQLContext(sc)
 
@@ -27,7 +29,23 @@ print pageviews.take(5)
 pageviews.registerTempTable("pageviews")
 pageviews.printSchema()
 
+
 largeviews = sqlContext.sql("SELECT title, ymdh, vcount FROM pageviews WHERE  vcount >= 100")
 
-print largeviews.take(20)
+
+def print_result(res):
+    print("############################################")
+    print(res)
+    print("############################################")
+
+lv = largeviews.take(200)       
+
+print_result(lv)
+
+rdd = largeviews.map(lambda x: (x['title'], x['ymdh'], x['vcount']))
+result = rdd.take(200)
+
+print_result(result)
+
+rdd.saveToCassandra("wiki_test","test1")
 
