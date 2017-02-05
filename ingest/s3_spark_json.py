@@ -1,7 +1,7 @@
 ################################################################################
 # Read files from S3
 # Grab metadata from filename
-# Create json document with only the relevant fields that Spark can handle
+# Create json document that Spark can handle with only the relevant fields
 # Krishna Thapa                                                        Feb 2017
 ################################################################################
 
@@ -42,7 +42,7 @@ key = bucket.get_key(folder_name)
 k = Key(bucket)
 k.set_contents_from_string('This is a test of S3')
 data = k.get_contents_as_string()
-print data
+logger.info("Sending test file to S3: {}".format(data))
 
 def convert_to_json(basepath, sendto):
     """
@@ -63,7 +63,7 @@ def convert_to_json(basepath, sendto):
             # S3 key name is of the format kt-wiki/pageviews/2016/2016-06/pageviews-20160601-000000.gz
             # Split by / to get last element
             filenames.append(thisfile)
-            logger.info("Processing file: %s", thisfile)
+            logger.info("Processing file: {}".format(thisfile))
             fname = thisfile.split('/')
 
             # Get content from filename and save to local
@@ -85,25 +85,30 @@ def convert_to_json(basepath, sendto):
                         doc = {}
                         doc['ymdh'] = year + '-' + month + '-' + day + '-' + hrs
                         try:
-                            title, vcount = line[1], line[2]
+                            # format: project, title, views, bytes ~ en Main_Page 242332 4737756101
+                            prj, title, vcount = line[0], line[1], line[2]
+                            doc['prj'] = prj
                             doc['title'] = title
                             doc['vcount'] = vcount
+                            json.dump(doc,fp)
+                            fp.write('\n')
                         except:
-                            logger.error('Error reading gzip file at line: %s', line)
-                        json.dump(doc,fp)
-                        fp.write('\n')
+                            logger.error('Error reading gzip file {} at line: {}'.format(thisfile, line))
+                            sys.exc_clear()
 
             # Now, save the json file to 
             key_name = 'pageviews-' +  year + '-' + month + '-' + day + '-' + hrs + '.json'
             full_key_name = os.path.join(sendto, key_name)
             k = bucket.new_key(full_key_name)
 
-            logger.info("Sending json file to S3: %s", docname)
+            logger.info("Sending json file to S3: {}".format(docname))
             k.set_contents_from_filename(key_name)
 
             # Remove temp file
-            logger.info("Removing temp file: ", '/home/ubuntu/WikiView/data/'+fname[-1])
+            logger.info("Removing temp file: {} {}".format('/home/ubuntu/WikiView/data/', fname[-1]))
             os.remove('/home/ubuntu/WikiView/data/'+fname[-1])
+            logger.info("Removing temp file: {}".format(key_name))
+            os.remove(key_name)
     logger.info('Finished!!!')
 
 
@@ -111,7 +116,7 @@ if __name__ == "__main__":
     logging.basicConfig(filename='s3_spark_json.log', level=logging.INFO)
     logging.info('Starting...')
 
-    basepath = 'pageviews/2016/2016-12/pageviews-20161231-'
-    sendto = 'test/'
+    basepath = 'pageviews/2016/2016-12/pageviews-201612'
+    sendto = 'processed/'
     convert_to_json(basepath, sendto)
     logging.info('Finished...')
