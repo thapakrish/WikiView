@@ -47,5 +47,15 @@ result = rdd.take(200)
 
 print_result(result)
 
+"""
+# Create table first
+
+CREATE KEYSPACE wiki_test WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor': 3};
+
+CREATE TABLE wiki_test.test1 (title varchar, ymdh varchar, vcount int, PRIMARY KEY (title, ymdh) );
+"""
+
+
 rdd.saveToCassandra("wiki_test","test1")
 
+# example query: select * from wiki_test.test1 limit 10;

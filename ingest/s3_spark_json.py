@@ -13,7 +13,7 @@ import boto
 import logging
 import json
 import gzip
-
+import sys
 
 # create logger
 
@@ -94,7 +94,8 @@ def convert_to_json(basepath, sendto):
                             fp.write('\n')
                         except:
                             logger.error('Error reading gzip file {} at line: {}'.format(thisfile, line))
-                            sys.exc_clear()
+                            pass
+#                            sys.exc_clear()
 
             # Now, save the json file to 
             key_name = 'pageviews-' +  year + '-' + month + '-' + day + '-' + hrs + '.json'
