@@ -59,3 +59,25 @@ session.execute(
     PRIMARY KEY (title, ymdh) );
     """
 )
+
+session.execute(
+    """
+    CREATE KEYSPACE IF NOT EXISTS graph WITH REPLICATION = {
+        'class' : 'SimpleStrategy',
+        'replication_factor' : 3
+    }
+    """
+)
+
+# create graph
+session.set_keyspace('graph')
+
+session.execute(
+    """
+    CREATE TABLE graph.g1 (
+        pgfrom varchar,
+        pgto varchar,
+        pgtoto list<varchar>,
+    PRIMARY KEY (pgfrom, pgto) );
+    """
+)
