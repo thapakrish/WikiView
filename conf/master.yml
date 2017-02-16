@@ -1,0 +1,10 @@
+purchase_type: on_demand
+subnet_id: subnet-XXXXX
+num_instances: 1
+key_name: krishna-thapa
+security_group_ids: XX-XXX
+instance_type: m4.large
+tag_name: krishna-spark
+vol_size: 100
+role: master
+use_eips: true
