@@ -22,7 +22,7 @@ session.execute(
         title varchar,
         ymdh varchar,
         vcount int,
-    PRIMARY KEY(title,ymdh)
+    PRIMARY KEY(ymdh,title)
     );
     """
 )
