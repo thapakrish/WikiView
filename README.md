@@ -1,8 +1,3 @@
-# WikiView
-A data analysis framework to analyze wiki graph data in a distributed manner. 
-
----
-
 ## Table of Contents
 
 1. [Data Flow] (README.md#intro)
@@ -15,6 +10,8 @@ A data analysis framework to analyze wiki graph data in a distributed manner.
 ## Data Flow
 
 [Back to Table of Contents] (README.md#table-of-contents)
+
+![](data/DataFlow.png)
 
 ## Data
 A graph related problem requires two components. First is the graph itself, which has nodes and edges. To generate this graph, I downloaded the `pages.sql.gz` and `pagelinks.sql.gz` dump that wiki media provides [Sample](https://dumps.wikimedia.org/enwiki/20170101/) . This data gives a snapshot of wiki pages and their connection to other pages. Compressed `pagelinks` and `pages` sql dump are of 5GB and 1.5GB in size respectively, which provides a challange if you plan to merge these tables over your sql server (don't do it).
@@ -51,7 +48,7 @@ Data transformation code is found [here](link to code)
 
 [Back to Table of Contents] (README.md#table-of-contents)
 
-Configurations files to spin up AWS clusters can be found [here](). I spawned 5 `Spark` clusters with 4 workers, and 4 separate `Cassandra` clusters. Having `Cassandra` on the same node as `Spark`, as it turns out,  is not quite desirable for my use case primarily because I needed the memory for map-reduce operations. Furthermore, having them on separate clusters lets you separate issues, and not loose data in case something happens to your `Spark` clusters. 
+Configurations files to spin up AWS clusters can be found [here](conf/). I spawned 5 `Spark` clusters with 4 workers, and 4 separate `Cassandra` clusters. Having `Cassandra` on the same node as `Spark`, as it turns out,  is not quite desirable for my use case primarily because I needed the memory for map-reduce operations. Furthermore, having them on separate clusters lets you separate issues, and not loose data in case something happens to your `Spark` clusters. 
 
 ---
 
@@ -61,7 +58,7 @@ Configurations files to spin up AWS clusters can be found [here](). I spawned 5 
 
 [Back to Table of Contents] (README.md#table-of-contents)
 
-The processed data sits on S3 bucket. I used Spark `sqlContext.read.json` and converted it to a rdd before making other transformations. It is best to persist data in memory/disk after ingesting S3 data if you're doing further transformations down the line. Code for batch-processing can be found [here]().
+The processed data sits on S3 bucket. I used Spark `sqlContext.read.json` and converted it to a rdd before making other transformations. It is best to persist data in memory/disk after ingesting S3 data if you're doing further transformations down the line. Code for batch-processing can be found [here](ingest/s3_spark_json.py).
 
 ---
 
@@ -71,7 +68,7 @@ The processed data sits on S3 bucket. I used Spark `sqlContext.read.json` and co
 
 [Back to Table of Contents] (README.md#table-of-contents)
 
-Unlike relational databases, you typically think about what querries you are interested in before designing your database schema fro `Cassandra`. The data pipeline currently stores hourly, daily, and graph data (up to 2 degrees) and the schema for these tables can be found [here]().
+Unlike relational databases, you typically think about what querries you are interested in before designing your database schema fro `Cassandra`. The data pipeline currently stores hourly, daily, and graph data (up to 2 degrees) and the schema for these tables can be found [here](batch/create_tables.py).
 
 ---
 
