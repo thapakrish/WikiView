@@ -1,0 +1,10 @@
+purchase_type: on_demand
+subnet_id: subnet-XXXXX
+num_instances: 4
+key_name: krishna-thapa
+security_group_ids: XX-XXX
+instance_type: m4.large
+tag_name: krishna-cassandra
+vol_size: 200
+role: master
+use_eips: true
