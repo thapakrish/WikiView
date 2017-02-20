@@ -15,15 +15,6 @@ import json
 import gzip
 import sys
 
-# create logger
-
-logger = logging.getLogger('WikiView')
-hdlr = logging.FileHandler('s3_spark_json.log')
-formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-hdlr.setFormatter(formatter)
-logger.addHandler(hdlr) 
-logger.setLevel(logging.DEBUG)
-
 
 # Grab aws credentials from os environment
 aws_access_key = os.getenv('AWS_ACCESS_KEY_ID', 'default')
@@ -38,11 +29,17 @@ conn = boto.connect_s3(aws_access_key, aws_secret_access_key)
 bucket = conn.get_bucket(bucket_name)
 key = bucket.get_key(folder_name)
 
-## Sample 
-k = Key(bucket)
-k.set_contents_from_string('This is a test of S3')
-data = k.get_contents_as_string()
-logger.info("Sending test file to S3: {}".format(data))
+
+# create logger
+def configure_logger():
+    logger = logging.getLogger('WikiLog')
+    hdlr = logging.FileHandler('s3_spark_json.log')
+    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+    hdlr.setFormatter(formatter)
+    logger.addHandler(hdlr) 
+    logger.setLevel(logging.INFO)
+    return logger
+
 
 def convert_to_json(basepath, sendto):
     """
@@ -51,6 +48,8 @@ def convert_to_json(basepath, sendto):
     basepath: grab gz files from dir
     sendto: which folder to send json file to
     """
+
+    logger = logging.getLogger('WikiLog')
 
     k = bucket.new_key(basepath)
 
@@ -114,10 +113,17 @@ def convert_to_json(basepath, sendto):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(filename='s3_spark_json.log', level=logging.INFO)
-    logging.info('Starting...')
+
+
+    logger = configure_logger()
+    logger.info('Starting...')
+    ## Sample 
+    k = Key(bucket)
+    k.set_contents_from_string('This is a test of S3')
+    data = k.get_contents_as_string()
+    logger.info("Sending test file to S3: {}".format(data))
 
     basepath = 'pageviews/2016/2016-12/pageviews-201612'
     sendto = 'processed/'
     convert_to_json(basepath, sendto)
-    logging.info('Finished...')
+    logger.info('Finished...')
