@@ -1,0 +1,171 @@
+{% extends "mybase1.html" %}
+{% block titleop %}
+
+<style>
+
+.link {
+  stroke: #ccc;
+}
+
+.node text {
+  pointer-events: none;
+  font: 10px sans-serif;
+}
+
+</style>
+<body>
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script>
+
+
+var data =  {{output | tojson }};
+
+var myjson = {};
+var nodes = [];
+var links = [];
+
+//debugger;
+
+for(i =0; i < data.length; i++){
+
+    if( i == 0){
+    // at init, grab name and append. 0th element is the source.
+    var temp1 = {"name": data[0]['pgfrom'], "group": 2};
+    nodes.push(temp1);
+    }
+
+    dat = data[i];
+    pgfrom = dat['pgfrom'];
+    pgto = dat['pgto'];
+
+    // 1st degre connection is group 2
+    var temp2 = {"name": pgto, "group": 2};
+    nodes.push(temp2);
+
+    // point from 1st degree to source
+    var temp3 = {"source": nodes.length - 1, "target": 0, "value": nodes.length, "distance": 5};
+    links.push(temp3);
+
+    var pgtoto = dat['pgtoto'];
+    var toLink = nodes.length;
+
+
+    for(j = 0; j < pgtoto.length; j++){
+     var temp4 = {"name": pgtoto[j], "group": 3};
+     nodes.push(temp4);
+     var lnks = {"source": nodes.length - 1, "target": toLink, "value": 1, "distance": 7};
+     links.push(lnks);
+
+
+//     if (j < pgtoto.length / 2) {
+       var temp3 = {"source": toLink, "target": 0, "value": 1, "distance": 5};
+  //    }
+     links.push(temp3);
+
+    };
+
+
+};
+
+myjson["nodes"] = nodes;
+myjson["links"] = links;
+
+
+
+var width = 960,
+    height = 800
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+// svg repositioning
+//$("svg").css({top: 200, left: 200, position:'absolute'});
+
+var force = d3.layout.force()
+    .gravity(0.05)
+//    .distance(100)
+    .charge(-100)
+    .size([width, height]);
+
+//d3.json("graph.json", function(error, json) {
+//  if (error) throw error;
+var json = myjson;
+//var json = {"nodes":[{"name":"Pluto","group":1},{"name":"(119951)_2002_KX14","group":2},{"name":"Oort_cloud", "group":3 },{"name":"Kuiper_belt", "group":3 },{"name":"Asteroid_belt", "group":3 }],"links":[{"source":1,"target":0,"value":5}, {"source":2,"target":1,"value":1}, {"source":3,"target":1,"value":1}, {"source":4,"target":1,"value":1}]};
+
+//debugger;
+  force
+      .nodes(json.nodes)
+      .links(json.links)
+      .linkDistance(function(d) { return (d.distance*10); })
+      .start();
+
+  var link = svg.selectAll(".link")
+      .data(json.links)
+    .enter().append("line")
+      .attr("class", "link");
+
+  var node = svg.selectAll(".node")
+      .data(json.nodes)
+    .enter().append("g")
+      .attr("class", "node")
+      .call(force.drag);
+
+//
+
+//      .attr("xlink:href", "https://github.com/favicon.ico")
+//      .attr("xlink:href", "wiki-logo")
+  node.append("image")
+      .attr("xlink:href", "https://upload.wikimedia.org/wikipedia/commons/b/b0/Wikipedia-favicon.png")
+      .attr("x", -8)
+      .attr("y", -8)
+      .attr("width", 16)
+      .attr("height", 16);
+
+  node.append("text")
+      .attr("dx", 12)
+      .attr("dy", ".35em")
+      .text(function(d) { return d.name });
+
+  force.on("tick", function() {
+    link.attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+    node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+  });
+//});
+
+</script>
+
+<!--
+<div class="container">
+     <div class="starter-template">
+       <div class="row" style="height:100vh;">
+               <div class="col-md-10 col-md-offset-1">
+                   <table class="table">
+                     <thead>
+                       <tr>
+                         <th>page</th>
+                         <th>linked by</th>
+                         <th>links to</th>
+                       </tr>
+                     </thead>
+                     <tbody>
+                       {% for val in output %}
+                       <tr>
+                         <td>{{val.pgfrom}}</td>
+                         <td>{{val.pgto}}</td>
+                         <td>{{val.pgtoto}}</td>
+                       </tr>
+                       {% endfor %}
+                     </tbody>
+                   </table>
+               </div>
+       </div>
+     </div>
+   </div>
+-->
+{% endblock %}
+
