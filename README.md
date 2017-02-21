@@ -1,19 +1,26 @@
 ## Table of Contents
 
-1. [Data Flow] (README.md#data-flow)
-2. [Data] (README.md#data-flow)
+1. [Introduction] (README.md#introduction)
+2. [Data Flow] (README.md#data-flow)
 3. [AWS Cluster] (README.md#aws-cluster)
 4. [Batch Processing] (README.md#batch-processing)
 5. [Cassandra] (README.md#cassandra)
 6. [Flask] (README.md#flask)
 
+## Introduction
+Wikiview is a data platform where users can ask questions about individual wiki pages. It is designed for data analysts and data scientists who might want to build data models to extract meaningful information from wiki data. I am interested in asking how pageviews for a given wiki page evolves over time, how events trigger pageviews to other pages, or if one can predict which hyperlinks are visitors to a given page likely to click next.
+
+Even though I am using this platform to crunch wiki data, this framework can be used for other graph-related problems. One could look at citations of papers in `arxiv`, for example, or user relationships in social sites where there is a temporal component to connectedness among the nodes. Furthermore, instead of `pageview counts` metadata, one can investigate the evolution of `text` content with minor edits to the code.
+
+---
 
 ## Data Flow
+[Back to Table of Contents] (README.md#table-of-contents)
 
 ![](data/DataFlow.png)
 
 
-## Data
+### Data
 
 [Back to Table of Contents] (README.md#table-of-contents)
 
@@ -23,7 +30,7 @@ Secondly, we need metadata that we are interested in analyzing. Wiki media also 
 
 For my use case, I converted data to a `.json` format that `Spark` understands before sending to `S3`. I then ingest this data with 4 Spark worker clusters, where I do map-reduce operations before saving to `Cassandra`
 
-After some transformations and parsing of tables, sample 
+After some transformations and parsing of tables, sample data looks like the following:
 
 #### Pagelinks
 
@@ -45,13 +52,15 @@ Spark's json read function expects each json object to be in a new line:
     {"title": "Pressure_system", "vcount": "10", "ymdh": "2016-12-01-000000", "prj": "en"}
     {"title": "Atmospheric_thermodynamics", "vcount": "4", "ymdh": "2016-12-01-000000", "prj": "en"}
 
-Data transformation code is found [here](link to code)
+Data transformation code is found [here](ingest/s3_spark_json.py) and [here](ingest/s3_data_transform.py).
 
 ## AWS Cluster
 
 [Back to Table of Contents] (README.md#table-of-contents)
 
-Configurations files to spin up AWS clusters can be found [here](conf/). I spawned 5 `Spark` clusters with 4 workers and 4 separate `Cassandra` clusters. Having `Cassandra` on the same node as `Spark`, as it turns out,  is not quite desirable for my use case primarily because I needed the memory for map-reduce operations. Furthermore, having them on separate clusters lets you separate issues, and not loose data in case something happens to your `Spark` clusters. 
+Configurations files to spin up AWS clusters can be found [here](conf/). Having `Cassandra` on the same node as `Spark`, as it turns out,  is not quite desirable for my use case primarily because I needed the memory for map-reduce operations. Furthermore, having them on separate clusters lets you separate issues, and not loose data in case something happens to your `Spark` clusters. 
+
+I spawned 5 `Spark` clusters with 4 workers and 4 separate `Cassandra` clusters, each `m4.large` type that comes with `8 GB` memory. `Spark` and `Cassandra` clusters have `100 GB` and `200 GB` memory respectively.
 
 ---
 
@@ -71,7 +80,7 @@ The processed data sits on S3 bucket. I used Spark `sqlContext.read.json` and co
 
 [Back to Table of Contents] (README.md#table-of-contents)
 
-Unlike relational databases, you typically think about what queries you are interested in before designing your database schema fro `Cassandra`. The data pipeline currently stores hourly, daily, and graph data (up to 2 degrees) and the schema for these tables can be found [here](batch/create_tables.py).
+Unlike relational databases, you typically think about what queries you are interested in before designing your database schema for `Cassandra`. The data pipeline currently stores hourly, daily, and graph data (up to 2 degrees) and the schema for these tables can be found [here](batch/create_tables.py).
 
 ---
 
