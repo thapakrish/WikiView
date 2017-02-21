@@ -4,108 +4,79 @@ from flask import render_template
 from flask import request
 from flask import json 
 
+
 @app.route('/')
 @app.route('/index')
 def index():
-  return render_template("base.html")
-  """
-  user = { 'nickname': 'Miguel' } # fake user
-  mylist = [1,2,3,4]
-  return render_template("index.html", title = 'Home', user = user, mylist = mylist)
-  """
+  return render_template("index.html")
 
 # importing Cassandra modules from the driver we just installed
 from cassandra.cluster import Cluster
 
-cluster = Cluster(['172.31.1.100','172.31.1.107','172.31.1.104','172.31.1.101','172.31.1.110','172.31.1.109'])
 
-#session = cluster.connect('playground')
-
-"""
-@app.route('/api/<email>/<date>')
-def get_email(email, date):
-       stmt = "SELECT * FROM email WHERE id=%s and date=%s"
-       response = session.execute(stmt, parameters=[email, date])
-       response_list = []
-       for val in response:
-            response_list.append(val)
-       jsonresponse = [{"first name": x.fname, "last name": x.lname, "id": x.id, "message": x.message, "time": x.time} for x in response_list]
-       return jsonify(emails=jsonresponse)
-"""
-"""
-@app.route('/email')
-def email():
- return render_template("email.html")
-
-@app.route("/email", methods=['POST'])
-def email_post():
- emailid = request.form["emailid"]
- date = request.form["date"]
-
- #email entered is in emailid and date selected in dropdown is in date variable respectively
-
- stmt = "SELECT * FROM email WHERE id=%s and date=%s"
- response = session.execute(stmt, parameters=[emailid, date])
- response_list = []
- for val in response:
-    response_list.append(val)
- jsonresponse = [{"fname": x.fname, "lname": x.lname, "id": x.id, "message": x.message, "time": x.time} for x in response_list]
- return render_template("emailop.html", output=jsonresponse)
-"""
-
-@app.route('/realtime')
-def realtime():
- return render_template("realtime.html")
+cluster = Cluster(['a','b','c','d'])
 
 
+#session = cluster.connect('wiki')
+session = cluster.connect('wiki')
 
-#session1 = cluster.connect('wiki_test')
-session1 = cluster.connect('wiki_test')
-
-@app.route('/pageviews')
+######### PAGEVIEWS
+@app.route('/pageviews', methods=['GET'])
 def pageviews():
  return render_template("pageviews.html")
 
+
 @app.route("/pageviews", methods=['POST'])
 def pageviews_post():
-  title = request.form["title"]
 
-  #email entered is in emailid and date selected in dropdown is in date variable respectively
+  titles = request.form["title"]
+  title_list = titles.split(',')
+  print(" Titles: ----{} \n".format(title_list))
 
-  # stmt = "SELECT * FROM test1 WHERE title=%s"
-  stmt = "SELECT * FROM test2 WHERE title=%s"
-  response = session1.execute(stmt, parameters=[title])
-  response_list = []
-  for val in response:
-    response_list.append(val)
-    # jsonresponse = [{"title": x.title, "ymdh": x.ymdh[:13], "vcount": x.vcount} for x in response_list]
-  jsonresponse = [{"title": x.title, "ymdh": x.ymdh[:13], "vcount": x.vcount} for x in response_list]
-  # print(jsonresponse)
+  jsonresponse = []
+
+  for pgtitle in title_list:
+    pgtitle = pgtitle.lstrip()
+    pgtitle = pgtitle.replace(" ","_").title()
+    print(" Page title: ----{} \n".format(pgtitle))
+    stmt = "SELECT * FROM hourly WHERE title=%s"
+    response = session.execute(stmt, parameters=[pgtitle])
+    response_title = []
+    for val in response:
+      response_title.append(val)
+    jsonTitle = [{"title": x.title, "ymdh": x.ymdh[:13], "vcount": x.vcount} for x in response_title]
+    jsonresponse.extend(jsonTitle)
+
+#  print(jsonresponse)
   return render_template("pageviewsop.html", output=jsonresponse)
 
 
 
+######### Graph
+
+@app.route('/graph', methods=['GET'])
+def graph():
+ return render_template("graph.html")
 
 
-session2 = cluster.connect('wiki_test')
-@app.route('/trending')
-def trending():
- return render_template("trending.html")
+@app.route("/graph", methods=['POST'])
+def graph_post():
+  session = cluster.connect('graph')
+  titles = request.form["title"]
+  pgtitle = titles.lstrip()
+  pgtitle = pgtitle.replace(" ","_").title()
 
-@app.route("/trending", methods=['POST'])
-def trending_post():
-  title = request.form["title"]
+  jsonresponse = []
 
-  #email entered is in emailid and date selected in dropdown is in date variable respectively
-
-  # stmt = "SELECT * FROM test1 WHERE title=%s"
-  stmt = "SELECT * FROM test2 WHERE title=%s"
-  response = session2.execute(stmt, parameters=[title])
-  response_list = []
+  stmt = "SELECT * FROM graph.g2 WHERE pgfrom=%s"
+  response = session.execute(stmt, parameters=[pgtitle])
+  response_title = []
   for val in response:
-    response_list.append(val)
-    # jsonresponse = [{"title": x.title, "ymdh": x.ymdh[:13], "vcount": x.vcount} for x in response_list]
-  jsonresponse = [{"title": x.title, "ymdh": x.ymdh[:13], "vcount": x.vcount} for x in response_list]
-  # print(jsonresponse)
-  return render_template("trendingop.html", output=jsonresponse)
+   response_title.append(val)
+  jsonTitle = [{"pgfrom": x.pgfrom, "pgto": x.pgto, "pgtoto": [x.encode('UTF8') for x in x.pgtoto]} for x in response_title]
+  jsonresponse.extend(jsonTitle)
+
+#  print(jsonresponse)
+  return render_template("graphop.html", output=jsonresponse)
+
 

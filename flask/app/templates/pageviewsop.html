@@ -6,42 +6,6 @@
 <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
 <script src="https://d3js.org/d3.v4.min.js"></script>
 
-<!--
-<div id="container" style="height: 400px; min-width: 310px"></div>
--->
-
-<div id="container0" style="width:100%; height:400px;"></div>
-
-<!--
-<script>
-
-$(function () { 
-    var myChart = Highcharts.chart('container0', {
-        chart: {
-            type: 'bar'
-        },
-        title: {
-            text: 'Fruit Consumption'
-        },
-        xAxis: {
-            categories: ['Apples', 'Bananas', 'Oranges']
-        },
-        yAxis: {
-            title: {
-                text: 'Fruit eaten'
-            }
-        },
-        series: [{
-            name: 'Jane',
-            data: [1, 0, 4]
-        }, {
-            name: 'John',
-            data: [5, 7, 3]
-        }]
-    });
-});
-</script>
--->
 
 
 <div id="container" style="height: 400px; min-width: 310px"></div>
@@ -52,7 +16,6 @@ $(function () {
 //debugger;	      
 
 var seriesOptions = [];
-names = ['abc'];
 
 function createChart() {
 
@@ -98,28 +61,22 @@ var data =  {{output | tojson }};
 var parseDate = d3.timeParse("%Y-%m-%d-%H");
 var series = {};
 
-
-//seriesOptions = [{name: 'Tokyo', data : [[1483228800000,270.38],[1483232400000, 268.83],[1483239600000,271.34]]}
-
 for (i=0; i < data.length; i++) {
-//	      data[i] = type(data[i]);
 	      var title = data[i]['title'];
 	      var ymdh = data[i]['ymdh'];
-//	      Date.UTC(2013, 3, 22, 1, 15);
 	      var str = ymdh.split('-');
 	      var b = str.map(function(item) {
 	      return parseInt(item, 10);
 	      });
 	      var ymdh = (Number(str[0]), Number(str[1]), Number(str[2]), Number(str[3].slice(0, 2)));
-
-//	      var ymdh = Date.UTC(ymdh);
-	      var ymdh = Date.UTC(b[0],b[1],b[2],b[3])
+	      var ymdh = Date.UTC(b[0],b[1]-1,b[2],b[3])
 	      var vcount = data[i]['vcount'];
+
 	      if (!(title in series)){
-	      series[data[i]['title']] = [[ymdh, vcount]];
+	      series[title] = [[ymdh, vcount]];
 	      }
 	      else{
-	      series[data[i]['title']].push([[ymdh, vcount]]);
+	      series[title].push([ymdh, vcount]);
 }
 	      };
 
