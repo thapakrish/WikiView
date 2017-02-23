@@ -1,3 +1,11 @@
+# WikiView
+
+  [Project Website](http://www.wikiview.site/pageviews)  
+  [Presentation Slides](http://goo.gl/KaQcIy)  
+
+---
+
+
 ## Table of Contents
 
 1. [Introduction] (README.md#introduction)
@@ -89,4 +97,4 @@ Unlike relational databases, you typically think about what queries you are inte
 
 [Back to Table of Contents] (README.md#table-of-contents)
 
-The front end for my web application supports queries to the result tables residing on `Cassandra`. Users can enter wiki page and get up to 2 degrees away from the parent page, enter `date` and get wiki pages with the highest number of views. Furthermore, users can enter multiple pages to get pageview counts for those pages for comparison [website](http://wikiview.site/).
+The front end for my web application supports queries to the result tables residing on `Cassandra`. Users can enter wiki page and get pageview counts for those pages. Users can also get page_titles up to 2 degrees away from the parent page which can be used for further analysis [website](http://wikiview.site/graph).
