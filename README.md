@@ -1,7 +1,7 @@
 # WikiView
 
-  <a href="http://www.wikiview.site/pageviews" target="_blank">Project Website</a>
-  <a href="http://goo.gl/KaQcIy" target="_blank">Presentation Slides</a>
+  <a href="http://www.wikiview.site/pageviews" target="_blank">Project Website</a>  
+  <a href="http://goo.gl/KaQcIy" target="_blank">Presentation Slides</a>  
 
 ---
 
