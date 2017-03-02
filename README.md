@@ -1,7 +1,7 @@
 # WikiView
 
-  [Project Website](http://www.wikiview.site/pageviews)  
-  [Presentation Slides](http://goo.gl/KaQcIy)  
+  <a href="http://www.wikiview.site/pageviews" target="_blank">Project Website</a>
+  <a href="http://goo.gl/KaQcIy" target="_blank">Presentation Slides</a>
 
 ---
 
@@ -78,7 +78,7 @@ I spawned 5 `Spark` clusters with 4 workers and 4 separate `Cassandra` clusters,
 
 [Back to Table of Contents] (README.md#table-of-contents)
 
-The processed data sits on S3 bucket. I used Spark `sqlContext.read.json` and converted it to rdd before making other transformations. It is best to persist data in memory/disk after ingesting S3 data if you're doing further transformations down the line. Code for batch-processing can be found [here](ingest/s3_spark_json.py).
+The processed data sits on S3 bucket. I used Spark `sqlContext.read.json` and converted it to rdd before making other transformations. It is best to persist data in memory/disk after ingesting S3 data if you're doing further transformations down the line. Code for batch-processing can be found [here](ingest/s3_spark_json.py) and [here](ingest/join_pages).
 
 ---
 
