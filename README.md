@@ -1,7 +1,7 @@
 # WikiView
 
-  <a href="http://www.wikiview.site/pageviews" target="_blank">Project Website</a>
-  <a href="http://goo.gl/KaQcIy" target="_blank">Presentation Slides</a>
+  <a href="http://www.wikiview.site/pageviews" target="_blank">Project Website</a>  
+  <a href="http://goo.gl/KaQcIy" target="_blank">Presentation Slides</a>  
 
 ---
 
@@ -14,12 +14,12 @@
 4. [Batch Processing] (README.md#batch-processing)
 5. [Cassandra] (README.md#cassandra)
 6. [Flask] (README.md#flask)
-7. [Repo directory structure] (README.md#repo-directory-structure)
+7. [Directory structure] (README.md#directory-structure)
 
 ## Introduction
 Wikiview is a data platform where users can ask questions about individual wiki pages. It is designed for data analysts and data scientists who might want to build data models to extract meaningful information from wiki data. I am interested in asking how pageviews for a given wiki page evolves over time, how events trigger pageviews to other pages, or if one can predict which hyperlinks are visitors to a given page likely to click next.
 
-Even though I am using this platform to crunch wiki data, this framework can be used for other graph-related problems. One could look at citations of papers in `arxiv`, for example, or user relationships in social sites where there is a temporal component to connectedness among the nodes. Furthermore, instead of `pageview counts` metadata, one can investigate the evolution of `text` content with minor edits to the code.
+Even though I am using this platform to crunch wiki data, this framework can also be used for other graph-related problems. One could look at citations of papers in `arxiv`, for example, or user relationships in social sites where there is a temporal component to connectedness among the nodes. Furthermore, instead of `pageview counts` metadata, one can investigate the evolution of `text` content with minor edits to the code.
 
 ---
 
@@ -91,6 +91,9 @@ The processed data sits on S3 bucket. I used Spark `sqlContext.read.json` and co
 
 Unlike relational databases, you typically think about what queries you are interested in before designing your database schema for `Cassandra`. The data pipeline currently stores hourly, daily, and graph data (up to 2 degrees) and the schema for these tables can be found [here](batch/create_tables.py).
 
+The `pageviews` table has `page_title` as the partition key and the date as the clustering column. The 'graph' table has `page_title` as the partition key and `pagelinks` from those page titles as clustering column. 
+
+
 ---
 
 
@@ -100,7 +103,7 @@ Unlike relational databases, you typically think about what queries you are inte
 
 The front end for my web application supports queries to the result tables residing on `Cassandra`. Users can enter wiki page and get pageview counts for those pages. Users can also get page_titles up to 2 degrees away from the parent page which can be used for further analysis [website](http://wikiview.site/graph).
 
-##Repo directory structure
+##Directory structure
 [Back to Table of Contents] (README.md#table-of-contents)
 
 Repo Structure
@@ -115,7 +118,7 @@ Repo Structure
 	|   └── s3_spark_json.py
 	├── batch
 	│   └── create_tables.py
-	|   └── joinpages.py
+	|   └── join_pages.py
 	|   └── push_to_cassandra.py
 	├── config
 	│   └── master.yml
