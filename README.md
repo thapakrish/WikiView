@@ -1,7 +1,7 @@
 # WikiView
 
-  [Project Website](http://www.wikiview.site/pageviews)  
-  [Presentation Slides](http://goo.gl/KaQcIy)  
+  <a href="http://www.wikiview.site/pageviews" target="_blank">Project Website</a>  
+  <a href="http://goo.gl/KaQcIy" target="_blank">Presentation Slides</a>  
 
 ---
 
@@ -14,11 +14,12 @@
 4. [Batch Processing] (README.md#batch-processing)
 5. [Cassandra] (README.md#cassandra)
 6. [Flask] (README.md#flask)
+7. [Directory structure] (README.md#directory-structure)
 
 ## Introduction
 Wikiview is a data platform where users can ask questions about individual wiki pages. It is designed for data analysts and data scientists who might want to build data models to extract meaningful information from wiki data. I am interested in asking how pageviews for a given wiki page evolves over time, how events trigger pageviews to other pages, or if one can predict which hyperlinks are visitors to a given page likely to click next.
 
-Even though I am using this platform to crunch wiki data, this framework can be used for other graph-related problems. One could look at citations of papers in `arxiv`, for example, or user relationships in social sites where there is a temporal component to connectedness among the nodes. Furthermore, instead of `pageview counts` metadata, one can investigate the evolution of `text` content with minor edits to the code.
+Even though I am using this platform to crunch wiki data, this framework can also be used for other graph-related problems. One could look at citations of papers in `arxiv`, for example, or user relationships in social sites where there is a temporal component to connectedness among the nodes. Furthermore, instead of `pageview counts` metadata, one can investigate the evolution of `text` content with minor edits to the code.
 
 ---
 
@@ -66,7 +67,7 @@ Data transformation code is found [here](ingest/s3_spark_json.py) and [here](ing
 
 [Back to Table of Contents] (README.md#table-of-contents)
 
-Configurations files to spin up AWS clusters can be found [here](conf/). Having `Cassandra` on the same node as `Spark`, as it turns out,  is not quite desirable for my use case primarily because I needed the memory for map-reduce operations. Furthermore, having them on separate clusters lets you separate issues, and not loose data in case something happens to your `Spark` clusters. 
+Configurations files to spin up AWS clusters can be found [here](conf/). Having `Cassandra` on the same node as `Spark`, as it turns out,  is not quite desirable for my use case primarily because I needed the memory for map-reduce operations. Furthermore, having them on separate clusters lets you separate issues, and not loose data in case something happens to your `Spark` clusters.
 
 I spawned 5 `Spark` clusters with 4 workers and 4 separate `Cassandra` clusters, each `m4.large` type that comes with `8 GB` memory. `Spark` and `Cassandra` clusters have `100 GB` and `200 GB` memory respectively.
 
@@ -78,7 +79,7 @@ I spawned 5 `Spark` clusters with 4 workers and 4 separate `Cassandra` clusters,
 
 [Back to Table of Contents] (README.md#table-of-contents)
 
-The processed data sits on S3 bucket. I used Spark `sqlContext.read.json` and converted it to rdd before making other transformations. It is best to persist data in memory/disk after ingesting S3 data if you're doing further transformations down the line. Code for batch-processing can be found [here](ingest/s3_spark_json.py).
+The processed data sits on S3 bucket. I used Spark `sqlContext.read.json` and converted it to rdd before making other transformations. It is best to persist data in memory/disk after ingesting S3 data if you're doing further transformations down the line. Code for batch-processing can be found [here](ingest/s3_spark_json.py) and [here](ingest/join_pages).
 
 ---
 
@@ -90,6 +91,9 @@ The processed data sits on S3 bucket. I used Spark `sqlContext.read.json` and co
 
 Unlike relational databases, you typically think about what queries you are interested in before designing your database schema for `Cassandra`. The data pipeline currently stores hourly, daily, and graph data (up to 2 degrees) and the schema for these tables can be found [here](batch/create_tables.py).
 
+The `pageviews` table has `page_title` as the partition key and the date as the clustering column. The 'graph' table has `page_title` as the partition key and `pagelinks` from those page titles as clustering column. 
+
+
 ---
 
 
@@ -98,3 +102,42 @@ Unlike relational databases, you typically think about what queries you are inte
 [Back to Table of Contents] (README.md#table-of-contents)
 
 The front end for my web application supports queries to the result tables residing on `Cassandra`. Users can enter wiki page and get pageview counts for those pages. Users can also get page_titles up to 2 degrees away from the parent page which can be used for further analysis [website](http://wikiview.site/graph).
+
+##Directory structure
+[Back to Table of Contents] (README.md#table-of-contents)
+
+Repo Structure
+
+	├── README.md
+	├── scripts
+	│  	└── submit_job.py
+	|  	└── download_data.sh
+	|  	└── bulk_copy_to_hdfs.sh
+	├── ingest
+	│   └── s3_data_transform.py
+	|   └── s3_spark_json.py
+	├── batch
+	│   └── create_tables.py
+	|   └── join_pages.py
+	|   └── push_to_cassandra.py
+	├── config
+	│   └── master.yml
+	|   └── workers.yml
+	|   └── cassandra-clusters.yml
+	|   └── spin_spark_hadoop.sh
+	|   └── spin_cassandra.sh
+	├── test
+	│   └── test_spark_connection.py
+	|   └── rethink_connection.py
+	└── data
+	|   └── pagelinksTest.csv
+	|   └── pagesTest.csv
+	|   └── pageviewsTest.json
+	├── flask
+	  	└── run.py
+	  	└── tornado.py
+	  	├── app
+	        	└── templates
+        		│   └── pageviews.html
+        		│   └── graph.html
+        		│   └── views.py
