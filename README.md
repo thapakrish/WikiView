@@ -1,6 +1,5 @@
 # WikiView
 
-  <a href="http://www.wikiview.site/pageviews" target="_blank">~~Project Website~~</a>  
   <a href="https://youtu.be/gW72Kzw-3lY" target="_blank">Demo Video</a>    
   <a href="http://goo.gl/KaQcIy" target="_blank">Presentation Slides</a>  
 
