@@ -1,6 +1,7 @@
 # WikiView
 
-  <a href="http://www.wikiview.site/pageviews" target="_blank">Project Website</a>  
+  <a href="http://www.wikiview.site/pageviews" target="_blank">~~Project Website~~</a>  
+  <a href="https://youtu.be/gW72Kzw-3lY" target="_blank">Demo Video</a>    
   <a href="http://goo.gl/KaQcIy" target="_blank">Presentation Slides</a>  
 
 ---
@@ -101,7 +102,7 @@ The `pageviews` table has `page_title` as the partition key and the date as the 
 
 [Back to Table of Contents] (README.md#table-of-contents)
 
-The front end for my web application supports queries to the result tables residing on `Cassandra`. Users can enter wiki page and get pageview counts for those pages. Users can also get page_titles up to 2 degrees away from the parent page which can be used for further analysis [website](http://wikiview.site/graph).
+The front end for my web application supports queries to the result tables residing on `Cassandra`. Users can enter wiki page and get pageview counts for those pages. Users can also get page_titles up to 2 degrees away from the parent page which can be used for further analysis.
 
 ##Directory structure
 [Back to Table of Contents] (README.md#table-of-contents)
